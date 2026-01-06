@@ -3,14 +3,14 @@ from app import create_app
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5003)
+    app.run(debug=True, port=5004)
 
 
 # To run the application using Flask's built-in server, use the command:
 
 """
 // Command to run the Flask application:-
-// Start the virtual environment and run the Flask app on port 5003:
+// Start the virtual environment and run the Flask app on port 5004:
 
 # Activate the virtual environment
 .\venv\Scripts\activate  
@@ -24,8 +24,8 @@ echo $env:FLASK_APP
 
 
 
-# Run the Flask app on port 5003
-flask run --port 5003 
+# Run the Flask app on port 5004
+flask run --port 5004 
 
 
 
