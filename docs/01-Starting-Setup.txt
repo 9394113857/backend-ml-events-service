@@ -1,0 +1,76 @@
+# =========================================================
+# STEP 0: CONFIRM PROJECT ROOT
+# =========================================================
+pwd
+
+
+# =========================================================
+# STEP 1: VERIFY REMOTES (origin already exists – OK)
+# =========================================================
+git remote -v
+
+
+# =========================================================
+# STEP 2: CHECK CURRENT BRANCH
+# =========================================================
+git branch
+
+
+# =========================================================
+# STEP 3: CREATE & SWITCH TO FEATURE BRANCH (IF NOT EXISTS)
+# (Safe even if branch already exists)
+# =========================================================
+git checkout -B feature/ml-events
+
+
+# =========================================================
+# STEP 4: ALWAYS SYNC FEATURE BRANCH FIRST
+# (Good habit before commit)
+# =========================================================
+git pull origin feature/ml-events || echo "No remote branch yet, continuing..."
+
+
+# =========================================================
+# STEP 5: CHECK FILE CHANGES
+# =========================================================
+git status
+
+
+# =========================================================
+# STEP 6: STAGE ALL CHANGES
+# =========================================================
+git add .
+
+
+# =========================================================
+# STEP 7: COMMIT (CLEAN, PROFESSIONAL MESSAGE)
+# =========================================================
+git commit -m "feat: ML events service with user_events model, API, and migrations"
+
+
+# =========================================================
+# STEP 8: PUSH FEATURE BRANCH & SET UPSTREAM
+# (This is REQUIRED only FIRST time)
+# =========================================================
+git push -u origin feature/ml-events
+
+
+# =========================================================
+# STEP 9: DAILY WORKFLOW (REMEMBER THIS)
+# ---------------------------------------------------------
+# 1. git checkout feature/ml-events
+# 2. git pull origin feature/ml-events
+# 3. make changes
+# 4. git add .
+# 5. git commit -m "message"
+# 6. git push
+# =========================================================
+
+
+# =========================================================
+# IMPORTANT RULES (READ ONCE, FOLLOW ALWAYS)
+# ---------------------------------------------------------
+# ❌ NEVER push directly to main
+# ✅ Always work on feature branches
+# ✅ Merge to main only after testing & deploy
+# =========================================================
