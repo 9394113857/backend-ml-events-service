@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 
 from app.config import Config
@@ -28,5 +28,9 @@ def create_app():
     # Events API:    POST /api/events
     # Events List:   GET  /api/events
     app.register_blueprint(event_bp)
+
+    @app.get("/")
+    def health():
+        return jsonify({"status": "ML-Events-order-service UP"}), 200
 
     return app
