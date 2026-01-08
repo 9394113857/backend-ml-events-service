@@ -1,0 +1,5 @@
+Orders-Flow:-
+📊 ML EVENTS SERVICE (NO CHANGE)
+app/models/user_event.py ✅
+
+Your model is already excellent — no change needed.
