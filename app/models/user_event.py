@@ -14,11 +14,16 @@ class UserEvent(db.Model):
     session_id = db.Column(db.String(100), nullable=False)
 
     # Event classification
-    event_type = db.Column(db.String(50), nullable=False)   # view, click, add_to_cart
-    object_type = db.Column(db.String(50), nullable=True)   # product, category, page
-    object_id = db.Column(db.String(100), nullable=True)    # product_id, route name
+    event_type = db.Column(db.String(50), nullable=False)
+    # examples: view_product, add_to_cart, checkout_started, order_placed
 
-    # 🔥 SAFE JSON FIELD (NOT "metadata")
+    object_type = db.Column(db.String(50), nullable=True)
+    # examples: product, cart, order, page
+
+    object_id = db.Column(db.String(100), nullable=True)
+    # product_id, order_id, route name, etc.
+
+    # JSON-safe metadata (price, quantity, totals, etc.)
     event_metadata = db.Column(db.JSON, nullable=True)
 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)

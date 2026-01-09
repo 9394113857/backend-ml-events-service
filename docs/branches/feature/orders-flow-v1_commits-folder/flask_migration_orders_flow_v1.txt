@@ -1,0 +1,103 @@
+# ==========================================================
+# FILE NAME:
+# orders-flow-v1-ml-events-migrations-and-git.txt
+#
+# PURPOSE:
+# 1️⃣ Run database migrations safely
+# 2️⃣ Verify tables via Flask shell
+# 3️⃣ Commit & push feature/orders-flow-v1 branch
+#
+# PROJECT:
+# backend-ml-events-service
+# ==========================================================
+
+
+# ==========================================================
+# STEP 1: ACTIVATE VENV & VERIFY LOCATION
+# ==========================================================
+cd E:\ecommerce-platform\backend-ml-events-service
+venv\Scripts\activate
+
+
+# ==========================================================
+# STEP 2: DATABASE MIGRATIONS (SAFE FLOW)
+# ==========================================================
+
+# Initialize migrations (run ONLY once in project lifetime)
+flask db init
+
+# Create migration for ML events schema
+flask db migrate -m "orders flow v1 - ml events schema"
+
+# Apply migrations to database
+flask db upgrade
+
+
+# ==========================================================
+# STEP 3: VERIFY DATABASE USING FLASK SHELL
+# ==========================================================
+
+flask shell
+
+# ---- INSIDE PYTHON SHELL (>>>)
+from sqlalchemy import inspect
+from app.extensions import db
+
+inspector = inspect(db.engine)
+print(inspector.get_table_names())
+
+# Expected output:
+# ['alembic_version', 'user_events']
+
+
+
+from app.models.user_event import UserEvent
+print(UserEvent.__table__.columns.keys())
+
+# Expected columns:
+# id, user_id, session_id, event_type, object_type,
+# object_id, event_metadata, timestamp
+
+exit()
+
+
+# ==========================================================
+# STEP 4: GIT STATUS CHECK
+# ==========================================================
+git status
+
+# Ensure branch is correct
+git branch
+# Expected: feature/orders-flow-v1
+
+
+# ==========================================================
+# STEP 5: ADD & COMMIT CHANGES
+# ==========================================================
+git add .
+
+git commit -m "🚀 Orders Flow v1: ML Events Tracking Added
+
+1️⃣ Added user_events model for ML pipelines
+2️⃣ Supports guest & authenticated users
+3️⃣ Tracks cart, checkout & order lifecycle events
+4️⃣ Safe JSON metadata for analytics
+5️⃣ Health check endpoint added
+
+📅 $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+
+
+# ==========================================================
+# STEP 6: PUSH FEATURE BRANCH TO REMOTE
+# ==========================================================
+git push -u origin feature/orders-flow-v1
+
+
+# ==========================================================
+# DONE ✅
+# Next steps:
+# - Merge feature/orders-flow-v1 → main
+# - Deploy on Render
+# - Set DATABASE_URL (Neon)
+# - flask db upgrade on Render
+# ==========================================================

@@ -11,26 +11,27 @@ def create_app():
     app.config.from_object(Config)
 
     # ---------------------------------------------
-    # Enable CORS (Angular / Frontend access)
+    # CORS (Angular / Netlify / Local)
     # ---------------------------------------------
-    CORS(app)
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # ---------------------------------------------
-    # Initialize Extensions
+    # Extensions
     # ---------------------------------------------
     db.init_app(app)
     migrate.init_app(app, db)
 
     # ---------------------------------------------
-    # Register Blueprints
+    # Routes
     # ---------------------------------------------
-    # Health check:  GET /health
-    # Events API:    POST /api/events
-    # Events List:   GET  /api/events
     app.register_blueprint(event_bp)
 
+    # ---------------------------------------------
+    # Root Health Check
+    # GET /
+    # ---------------------------------------------
     @app.get("/")
     def health():
-        return jsonify({"status": "ML-Events-order-service UP"}), 200
+        return jsonify({"status": "ML-Events-Service UP"}), 200
 
     return app
