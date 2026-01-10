@@ -18,7 +18,7 @@ if __name__ == "__main__":
 .\venv\Scripts\activate  
 
 # Run the Flask app on port 5004
-flask run --port 5004
+flask run --port 5004  
 
 ===============================================================================
   
