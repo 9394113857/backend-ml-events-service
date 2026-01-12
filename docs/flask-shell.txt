@@ -1,4 +1,4 @@
-🟥 CELL 4 — ML EVENTS SERVICE (User Events / Analytics)
+🟥 PROJECT 4 — ML EVENTS SERVICE (User Events / Analytics)
 # =====================================================
 # ML EVENTS SERVICE – DATABASE INSPECTION (FLASK SHELL)
 # =====================================================
@@ -54,3 +54,4 @@ STEP : (OPTIONAL) CLEAR DATABASE_URL
 # Good practice but not mandatory
 
 Remove-Item Env:DATABASE_URL
+
