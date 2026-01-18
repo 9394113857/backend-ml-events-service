@@ -1,0 +1,133 @@
+# ============================================================
+# CLEAN GIT SETUP FLOW (WHEN LOCAL & REMOTE ARE MESSY)
+# Repo: backend-ml-events-service
+# Goal:
+# - Make origin/main the source of truth
+# - Remove unrelated history issue
+# - Ignore junk (venv, cache, runtime files)
+# - Track app + migrations only
+# ============================================================
+
+
+# ----------------------------
+# 1. ALWAYS INSPECT FIRST
+# ----------------------------
+
+git status
+# Shows:
+# - branch divergence
+# - untracked files (venv, __pycache__, etc.)
+
+git branch
+# Confirm current branch (main)
+
+git remote -v
+# Confirm correct GitHub repo
+
+git log --oneline --graph --decorate --all
+# Understand history & divergence
+
+
+# ----------------------------
+# 2. SYNC LOCAL MAIN WITH REMOTE MAIN
+# (When local main has useless commits)
+# ----------------------------
+
+git fetch origin
+# Fetch latest state from GitHub (safe)
+
+git reset --hard origin/main
+# Force local main to exactly match GitHub main
+# NOTE:
+# - Removes local commit history
+# - Does NOT delete untracked files
+
+
+# ----------------------------
+# 3. VERIFY CLEAN STATE
+# ----------------------------
+
+git status
+# Expected:
+# On branch main
+# Your branch is up to date with 'origin/main'.
+# Untracked files: app/, migrations/, venv/, etc.
+
+
+# ----------------------------
+# 4. CREATE .gitignore
+# ----------------------------
+
+touch .gitignore
+
+
+# ----------------------------
+# 5. ADD IGNORE RULES
+# ----------------------------
+# Paste below content into .gitignore
+# ----------------------------
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# Flask runtime
+instance/
+*.log
+
+# Editor junk
+.vscode/
+.idea/
+
+# IMPORTANT: keep DB migrations
+!migrations/
+!migrations/**
+
+
+# ----------------------------
+# 6. COMMIT .gitignore ONLY
+# ----------------------------
+
+git add .gitignore
+git commit -m "Add gitignore for Python Flask ML service"
+
+
+# ----------------------------
+# 7. VERIFY IGNORED FILES
+# ----------------------------
+
+git status
+# venv/, __pycache__/, instance/ should NOT appear
+# Only app/ and migrations/ should be untracked
+
+
+# ----------------------------
+# 8. ADD REAL PROJECT CODE
+# ----------------------------
+
+git add app migrations
+git commit -m "Add ML events service application and migrations"
+
+
+# ----------------------------
+# 9. PUSH CLEAN MAIN
+# ----------------------------
+
+git push origin main
+
+
+# ----------------------------
+# DONE ✅
+# ----------------------------
+# Result:
+# - No unrelated history issues
+# - No venv in Git
+# - Migrations tracked
+# - Clean, professional repo
+# - Safe to continue development
+# ============================================================
