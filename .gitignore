@@ -1,59 +1,20 @@
-# ============================================
-# PYTHON BYTECODE & CACHE
-# ============================================
+# Python cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
 *.py[cod]
 
-# ============================================
-# VIRTUAL ENVIRONMENTS
-# ============================================
+# Virtual environments
 venv/
-.env
-.env.*
-*.env
+env/
+.env/
 
-# ============================================
-# DATABASE FILES (LOCAL ONLY)
-# ============================================
-*.db
-*.sqlite3
-
-# ============================================
-# LOG FILES
-# ============================================
-logs/
+# Flask runtime
+instance/
 *.log
-*.gz
 
-# ============================================
-# DOCUMENTATION
-# ============================================
-
-# ============================================
-# FLASK MIGRATIONS
-# ============================================
-# Keep migration source files
-migrations/versions/*.pyc
-
-# ============================================
-# OS / EDITOR FILES
-# ============================================
-Thumbs.db
-.DS_Store
-
-# VS Code
+# Editor junk
 .vscode/
-*.code-workspace
-
-# PyCharm
 .idea/
 
-# ============================================
-# TEMP / BACKUP FILES
-# ============================================
-*.tmp
-*.bak
-*.swp
+# Keep migrations
+!migrations/
+!migrations/**
