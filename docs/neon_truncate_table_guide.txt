@@ -1,0 +1,61 @@
+FILENAME: neon_truncate_table_guide.txt
+
+PURPOSE:
+This document explains how to remove all rows from a Neon PostgreSQL table
+using both Web UI (Neon Database Studio) and SQL query methods, including
+what CASCADE means and when to use it.
+
+--------------------------------------------------
+WEB-BASED OPTION (Neon Database Studio)
+--------------------------------------------------
+1. Open Neon Dashboard
+2. Go to:
+   Database → Tables → public → user_events
+3. Click "Truncate table" or "Confirm truncation"
+4. If Neon does NOT show a dependency warning:
+   - Click "Truncate tables"
+5. If Neon asks for CASCADE:
+   - This means other tables depend on this table
+   - Enable CASCADE only if you are OK with truncating dependent tables
+
+Result:
+- All rows are removed
+- Table structure remains
+- Fast operation
+- IDs reset
+
+--------------------------------------------------
+QUERY-BASED OPTION (SQL)
+--------------------------------------------------
+
+Basic truncate (recommended first):
+TRUNCATE TABLE public.user_events;
+
+If you get a dependency error, then use:
+TRUNCATE TABLE public.user_events CASCADE;
+
+--------------------------------------------------
+WHAT IS CASCADE?
+--------------------------------------------------
+CASCADE means:
+- Also truncate any tables that have FOREIGN KEY
+  dependencies on this table
+
+Use CASCADE ONLY IF:
+- PostgreSQL throws an error without it
+- You understand that related tables will also lose data
+
+--------------------------------------------------
+SAFE RECOMMENDATION
+--------------------------------------------------
+1. Try WITHOUT CASCADE first
+2. Use CASCADE only if Neon forces you
+3. Avoid CASCADE in production unless absolutely required
+
+--------------------------------------------------
+SUMMARY
+--------------------------------------------------
+Goal: Remove all rows → TRUNCATE TABLE
+Best option: TRUNCATE TABLE public.user_events;
+CASCADE: Only if dependency error occurs
+--------------------------------------------------
