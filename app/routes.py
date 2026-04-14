@@ -10,7 +10,6 @@ event_bp = Blueprint("event_bp", __name__, url_prefix="/api")
 
 # ------------------------------------------------
 # Health check
-# GET /api/health
 # ------------------------------------------------
 @event_bp.get("/health")
 def api_health():
@@ -19,24 +18,44 @@ def api_health():
 
 # ------------------------------------------------
 # Collect user events
-# POST /api/events
 # ------------------------------------------------
 @event_bp.post("/events")
 def collect_event():
     data = request.get_json() or {}
 
-    if "session_id" not in data or "event_type" not in data:
-        return jsonify({
-            "error": "session_id and event_type are required"
-        }), 400
+    # =====================================================
+    # 🔴 CRITICAL VALIDATIONS (ML COMPATIBILITY)
+    # =====================================================
 
+    # 1. user_id required
+    if not data.get("user_id"):
+        return jsonify({"error": "user_id required"}), 400
+
+    # 2. event_type validation
+    VALID_EVENTS = [
+        "view_product",
+        "add_to_cart",
+        "checkout",
+        "remove_from_cart"
+    ]
+
+    if data.get("event_type") not in VALID_EVENTS:
+        return jsonify({"error": "Invalid event_type"}), 400
+
+    # 3. object_type must be product
+    if data.get("object_type") != "product":
+        return jsonify({"error": "object_type must be 'product'"}), 400
+
+    # =====================================================
+    # CREATE EVENT
+    # =====================================================
     event = UserEvent(
-        user_id=data.get("user_id"),               # nullable
-        session_id=data["session_id"],             # required
-        event_type=data["event_type"],             # required
-        object_type=data.get("object_type"),
+        user_id=data["user_id"],
+        session_id=data.get("session_id"),
+        event_type=data["event_type"],
+        object_type=data["object_type"],
         object_id=data.get("object_id"),
-        event_metadata=data.get("event_metadata"), # JSON
+        event_metadata=data.get("event_metadata"),
     )
 
     db.session.add(event)
