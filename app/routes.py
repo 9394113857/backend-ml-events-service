@@ -24,27 +24,39 @@ def collect_event():
     data = request.get_json() or {}
 
     # =====================================================
-    # 🔴 CRITICAL VALIDATIONS (ML COMPATIBILITY)
+    # 🔴 CRITICAL VALIDATIONS (FINAL VERSION)
     # =====================================================
 
     # 1. user_id required
     if not data.get("user_id"):
         return jsonify({"error": "user_id required"}), 400
 
-    # 2. event_type validation
+    # 2. event_type validation (UPDATED ✅)
     VALID_EVENTS = [
         "view_product",
         "add_to_cart",
         "checkout",
-        "remove_from_cart"
+        "remove_from_cart",
+        "order_cancelled"   # ✅ ADDED
     ]
 
-    if data.get("event_type") not in VALID_EVENTS:
-        return jsonify({"error": "Invalid event_type"}), 400
+    event_type = data.get("event_type")
 
-    # 3. object_type must be product
-    if data.get("object_type") != "product":
-        return jsonify({"error": "object_type must be 'product'"}), 400
+    if event_type not in VALID_EVENTS:
+        return jsonify({"error": f"Invalid event_type: {event_type}"}), 400
+
+    # 3. object_type handling (SMART FIX ✅)
+    object_type = data.get("object_type")
+
+    # 👉 For ML events → must be product
+    if event_type in ["view_product", "add_to_cart", "checkout"]:
+        if object_type != "product":
+            return jsonify({"error": "object_type must be 'product'"}), 400
+
+    # 👉 For cancel → allow flexible (since no product_id sometimes)
+    if event_type == "order_cancelled":
+        if object_type not in ["product", None]:
+            return jsonify({"error": "Invalid object_type"}), 400
 
     # =====================================================
     # CREATE EVENT
@@ -52,8 +64,8 @@ def collect_event():
     event = UserEvent(
         user_id=data["user_id"],
         session_id=data.get("session_id"),
-        event_type=data["event_type"],
-        object_type=data["object_type"],
+        event_type=event_type,
+        object_type=object_type if object_type else "product",
         object_id=data.get("object_id"),
         event_metadata=data.get("event_metadata"),
     )
