@@ -1,5 +1,5 @@
 # =====================================================
-# ML EVENTS SERVICE – APP FACTORY (FINAL)
+# ML EVENTS SERVICE – APP FACTORY (FINAL CLEAN ✅)
 # =====================================================
 
 import os
@@ -16,9 +16,6 @@ from app.extensions import db, migrate
 from app.routes import event_bp
 
 
-# =====================================================
-# 🔧 BUILD INFO
-# =====================================================
 def get_build_info():
     try:
         with open("build_info.json") as f:
@@ -34,9 +31,6 @@ def get_build_info():
         }
 
 
-# =====================================================
-# 🧾 LOG FORMATTER WITH REQUEST ID
-# =====================================================
 class RequestFormatter(logging.Formatter):
     def format(self, record):
         try:
@@ -46,27 +40,16 @@ class RequestFormatter(logging.Formatter):
         return super().format(record)
 
 
-# =====================================================
-# 🚀 APP FACTORY
-# =====================================================
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # ---------------------------------------------
-    # CORS
-    # ---------------------------------------------
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # ✅ FIXED CORS (ALLOW ALL ROUTES)
+    CORS(app)
 
-    # ---------------------------------------------
-    # Extensions
-    # ---------------------------------------------
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # ---------------------------------------------
-    # REQUEST ID
-    # ---------------------------------------------
     @app.before_request
     def assign_request_id():
         g.request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
@@ -76,9 +59,7 @@ def create_app():
         response.headers["X-Request-ID"] = g.request_id
         return response
 
-    # ---------------------------------------------
-    # LOGGING
-    # ---------------------------------------------
+    # Logging
     logs_path = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_path, exist_ok=True)
 
@@ -98,21 +79,14 @@ def create_app():
 
     app.logger.setLevel(logging.INFO)
 
-    # ---------------------------------------------
-    # ROUTES
-    # ---------------------------------------------
-    app.register_blueprint(event_bp, url_prefix="/api/v1/events")
+    # ✅ CLEAN ROUTE PREFIX
+    app.register_blueprint(event_bp, url_prefix="/api/v1")
 
-    # ---------------------------------------------
-    # HEALTH
-    # ---------------------------------------------
     @app.get("/")
     def health():
-        info = get_build_info()
-
         return jsonify({
             "status": "ml-events-service UP",
-            "build": info
+            "build": get_build_info()
         }), 200
 
     return app
