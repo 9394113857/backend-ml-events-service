@@ -1,13 +1,16 @@
-from flask import Blueprint, request, jsonify
+# =====================================================
+# ML EVENTS ROUTES (FINAL - FULLY DYNAMIC ✅)
+# =====================================================
+
+from flask import Blueprint, request, jsonify, current_app
 from app.extensions import db
 from app.models.user_event import UserEvent
 
-# ✅ NO PREFIX HERE
-event_bp = Blueprint("event_bp", __name__)
+event_bp = Blueprint("event_bp", __name__, url_prefix="/api")
 
 
 # ------------------------------------------------
-# HEALTH
+# Health
 # ------------------------------------------------
 @event_bp.get("/health")
 def api_health():
@@ -15,51 +18,43 @@ def api_health():
 
 
 # ------------------------------------------------
-# EVENTS API
+# Collect Events (NO VALIDATION BLOCKING 🚀)
 # ------------------------------------------------
 @event_bp.post("/events")
 def collect_event():
     data = request.get_json() or {}
 
-    # ---------------------------
-    # VALIDATION
-    # ---------------------------
+    # ✅ Minimal required validation only
     if not data.get("user_id"):
         return jsonify({"error": "user_id required"}), 400
 
-    VALID_EVENTS = [
-        "view_product",
-        "add_to_cart",
-        "cart_view",
-        "checkout_started",
-        "checkout_completed",
-        "variant_selected",
-        "order_cancelled",
-        "order_view",
-        "order_details_view"
-    ]
+    if not data.get("event_type"):
+        return jsonify({"error": "event_type required"}), 400
 
-    event_type = data.get("event_type")
+    try:
+        event = UserEvent(
+            user_id=data.get("user_id"),
+            session_id=data.get("session_id"),
+            event_type=data.get("event_type"),
+            object_type=data.get("object_type"),
+            object_id=str(data.get("object_id")) if data.get("object_id") else None,
+            event_metadata=data.get("event_metadata"),
+        )
 
-    if event_type not in VALID_EVENTS:
-        return jsonify({"error": f"Invalid event_type: {event_type}"}), 400
+        db.session.add(event)
+        db.session.commit()
 
-    # ---------------------------
-    # SAVE EVENT
-    # ---------------------------
-    event = UserEvent(
-        user_id=data["user_id"],
-        session_id=data.get("session_id"),
-        event_type=event_type,
-        object_type=data.get("object_type", "product"),
-        object_id=data.get("object_id"),
-        event_metadata=data.get("event_metadata"),
-    )
+        current_app.logger.info(f"Event stored: {event.event_type}")
 
-    db.session.add(event)
-    db.session.commit()
+        return jsonify({
+            "message": "event stored",
+            "event_type": event.event_type
+        }), 201
 
-    return jsonify({
-        "message": "event stored",
-        "event_type": event.event_type
-    }), 201
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Event insert failed: {str(e)}")
+
+        return jsonify({
+            "error": "failed to store event"
+        }), 500
