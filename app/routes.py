@@ -6,7 +6,8 @@ from flask import Blueprint, request, jsonify, current_app
 from app.extensions import db
 from app.models.user_event import UserEvent
 
-event_bp = Blueprint("event_bp", __name__, url_prefix="/api")
+# event_bp = Blueprint("event_bp", __name__, url_prefix="/api")     # Optional prefix for all routes in this blueprint
+event_bp = Blueprint("event_bp", __name__)                          # No prefix, so routes are exactly as defined below (e.g. /health, /events)        
 
 
 # ------------------------------------------------
