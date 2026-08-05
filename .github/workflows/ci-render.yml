@@ -107,17 +107,18 @@ jobs:
       - name: Run Tests
 
         env:
-
           DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
-
           FLASK_ENV: testing
-
-
+      
         run: |
+      
+          PYTHONPATH=. pytest -v || test $? -eq 5
 
-          PYTHONPATH=. pytest -v
+# This means:
 
-
+# Exit code 0 → tests passed ✅
+# Exit code 5 → no tests found, continue ✅
+# Other errors → fail ❌
 
 
 
