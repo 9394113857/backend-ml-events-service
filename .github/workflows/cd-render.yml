@@ -1,0 +1,552 @@
+name: 🚀 CD - Backend ML Events Service Render
+
+
+on:
+
+
+  # ===================================================
+  # 🖐️ MANUAL DEPLOYMENT
+  # ===================================================
+
+  workflow_dispatch:
+
+
+
+
+  # ===================================================
+  # ⏰ DAILY DEPLOYMENT CHECK
+  # 3:30 AM IST = 22:00 UTC
+  # ===================================================
+
+  schedule:
+
+    - cron: "30 22 * * *"
+
+
+
+
+jobs:
+
+
+
+  # ===================================================
+  # 🚀 DEPLOYMENT JOB
+  # ===================================================
+
+  deploy:
+
+
+
+    name: 🚀 Deploy Backend ML Events Service
+
+
+
+    runs-on: ubuntu-latest
+
+
+
+
+    steps:
+
+
+
+      # ===================================================
+      # 📦 CHECKOUT
+      # ===================================================
+
+      - name: Checkout Code
+
+
+        uses: actions/checkout@v4
+
+
+        with:
+
+          fetch-depth: 0
+
+          fetch-tags: true
+
+
+
+
+
+      # ===================================================
+      # 🔧 SET METADATA
+      # ===================================================
+
+      - name: Set Deployment Metadata
+
+
+        run: |
+
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]
+
+          then
+
+
+            VERSION=${GITHUB_REF#refs/tags/}
+
+
+          else
+
+
+            VERSION="manual"
+
+
+          fi
+
+
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+
+
+          echo "COMMIT=${GITHUB_SHA}" >> $GITHUB_ENV
+
+
+
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]
+
+          then
+
+            echo "BRANCH=main" >> $GITHUB_ENV
+
+          else
+
+            echo "BRANCH=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+          fi
+
+
+
+
+          echo "DEPLOY_TIME_UTC=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+
+
+
+          echo "DEPLOY_TIME_IST=$(TZ='Asia/Kolkata' date +'%Y-%m-%d %H:%M:%S IST')" >> $GITHUB_ENV
+
+
+
+
+          echo "SERVICE_URL=https://backend-ml-events-service-ohhr.onrender.com" >> $GITHUB_ENV
+
+
+
+
+
+      # ===================================================
+      # 🚀 TRIGGER RENDER DEPLOYMENT
+      # ===================================================
+
+      - name: Trigger Render Deployment
+
+
+        run: |
+
+
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+
+
+
+
+
+
+      # ===================================================
+      # ⏳ WAIT FOR APPLICATION STARTUP
+      # ===================================================
+
+      - name: Wait For Application Startup
+
+
+        run: |
+
+
+          echo "Waiting for Render deployment..."
+
+
+
+          for i in {30..1}
+
+          do
+
+            echo "Health check starts in ${i} second(s)..."
+
+            sleep 1
+
+          done
+
+
+
+          echo "Starting Health Check..."
+
+
+
+
+
+
+
+      # ===================================================
+      # ❤️ HEALTH CHECK
+      # ===================================================
+
+      - name: Health Check
+
+
+        run: |
+
+
+          echo "Checking application health..."
+
+
+
+          for i in {1..10}
+
+
+          do
+
+
+
+            STATUS=$(curl -s \
+            -o /dev/null \
+            -w "%{http_code}" \
+            "${{ secrets.APPLICATION_HEALTH_URL }}")
+
+
+
+            echo "Health Check Attempt $i of 10 → HTTP $STATUS"
+
+
+
+
+            if [ "$STATUS" = "200" ]
+
+
+            then
+
+
+              echo "Application is healthy."
+
+              echo "DEPLOY_STATUS=SUCCESS" >> $GITHUB_ENV
+
+
+              exit 0
+
+
+            fi
+
+
+
+
+            sleep 10
+
+
+
+          done
+
+
+
+
+          echo "Health check failed after 10 attempts."
+
+
+          echo "DEPLOY_STATUS=FAILED" >> $GITHUB_ENV
+
+
+
+          exit 1
+
+
+
+
+
+
+
+      # ===================================================
+      # 📧 DEPLOY SUCCESS EMAIL
+      # ===================================================
+
+      - name: Send Deployment Success Email
+
+
+        if: success()
+
+
+
+        uses: dawidd6/action-send-mail@v3
+
+
+
+
+        with:
+
+
+
+          server_address: smtp.gmail.com
+
+
+          server_port: 465
+
+
+          secure: true
+
+
+
+          username: ${{ secrets.MAIL_USERNAME }}
+
+
+          password: ${{ secrets.MAIL_PASSWORD }}
+
+
+
+
+
+          subject: "🚀 DEPLOY SUCCESS | Backend ML Events Service ${{ env.VERSION }}"
+
+
+
+
+
+          to: ${{ secrets.MAIL_TO }}
+
+
+          cc: ${{ secrets.MAIL_CC }}
+
+
+
+
+
+          from: GitHub Actions CD
+
+
+
+
+
+          body: |
+
+
+
+            🚀 DEPLOYMENT SUCCESS
+
+
+
+            =================================================
+
+
+
+            🌐 SERVICE
+
+            Backend ML Events Service
+
+
+
+            🔗 URL
+
+            ${{ env.SERVICE_URL }}
+
+
+
+            =================================================
+
+
+
+            🏷️ VERSION
+
+            ${{ env.VERSION }}
+
+
+
+            🔖 COMMIT
+
+            ${{ env.COMMIT }}
+
+
+
+            🌿 BRANCH
+
+            ${{ env.BRANCH }}
+
+
+
+            ⚡ TRIGGER
+
+            ${{ github.event_name }}
+
+
+
+            👤 TRIGGERED BY
+
+            ${{ github.actor }}
+
+
+
+            =================================================
+
+
+
+            ⏰ DEPLOY TIME UTC
+
+            ${{ env.DEPLOY_TIME_UTC }}
+
+
+
+            ⏰ DEPLOY TIME IST
+
+            ${{ env.DEPLOY_TIME_IST }}
+
+
+
+            ❤️ HEALTH STATUS
+
+            ${{ env.DEPLOY_STATUS }}
+
+
+
+
+
+
+
+      # ===================================================
+      # ❌ DEPLOY FAILURE EMAIL
+      # ===================================================
+
+      - name: Send Deployment Failure Email
+
+
+
+        if: failure()
+
+
+
+
+        uses: dawidd6/action-send-mail@v3
+
+
+
+
+
+        with:
+
+
+
+
+          server_address: smtp.gmail.com
+
+
+
+          server_port: 465
+
+
+
+          secure: true
+
+
+
+
+          username: ${{ secrets.MAIL_USERNAME }}
+
+
+
+          password: ${{ secrets.MAIL_PASSWORD }}
+
+
+
+
+
+
+          subject: "❌ DEPLOY FAILED | Backend ML Events Service"
+
+
+
+
+
+
+          to: ${{ secrets.MAIL_TO }}
+
+
+
+          cc: ${{ secrets.MAIL_CC }}
+
+
+
+
+
+
+          from: GitHub Actions CD
+
+
+
+
+
+
+          body: |
+
+
+
+            ❌ DEPLOYMENT FAILED
+
+
+
+            =================================================
+
+
+
+            Repository:
+
+            ${{ github.repository }}
+
+
+
+
+            Version:
+
+            ${{ env.VERSION }}
+
+
+
+
+            Commit:
+
+            ${{ github.sha }}
+
+
+
+
+            Branch:
+
+            ${{ env.BRANCH }}
+
+
+
+
+            Trigger:
+
+            ${{ github.event_name }}
+
+
+
+
+            Triggered By:
+
+            ${{ github.actor }}
+
+
+
+            =================================================
+
+
+
+            Please check:
+
+
+
+            ❌ GitHub Actions logs
+
+
+            ❌ Render deployment logs
+
+
+            ❌ Application health endpoint
